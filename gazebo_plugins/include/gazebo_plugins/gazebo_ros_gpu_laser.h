@@ -15,8 +15,8 @@
  *
 */
 
-#ifndef GAZEBO_ROS_LASER_HH
-#define GAZEBO_ROS_LASER_HH
+#ifndef GAZEBO_ROS_GPU_LASER_HH
+#define GAZEBO_ROS_GPU_LASER_HH
 
 #include <string>
 
@@ -42,13 +42,13 @@
 
 namespace gazebo
 {
-  class GazeboRosLaser : public GpuRayPlugin
+  class GazeboRosGpuLaser : public GpuRayPlugin
   {
     /// \brief Constructor
-    public: GazeboRosLaser();
+    public: GazeboRosGpuLaser();
 
     /// \brief Destructor
-    public: ~GazeboRosLaser();
+    public: ~GazeboRosGpuLaser();
 
     /// \brief Load the plugin
     /// \param take in SDF root element

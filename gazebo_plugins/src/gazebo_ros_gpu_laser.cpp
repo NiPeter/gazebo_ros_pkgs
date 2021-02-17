@@ -49,17 +49,17 @@
 namespace gazebo
 {
 // Register this plugin with the simulator
-GZ_REGISTER_SENSOR_PLUGIN(GazeboRosLaser)
+GZ_REGISTER_SENSOR_PLUGIN(GazeboRosGpuLaser)
 
 ////////////////////////////////////////////////////////////////////////////////
 // Constructor
-GazeboRosLaser::GazeboRosLaser()
+GazeboRosGpuLaser::GazeboRosGpuLaser()
 {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Destructor
-GazeboRosLaser::~GazeboRosLaser()
+GazeboRosGpuLaser::~GazeboRosGpuLaser()
 {
   ROS_DEBUG_STREAM_NAMED("gpu_laser","Shutting down GPU Laser");
   this->rosnode_->shutdown();
@@ -69,7 +69,7 @@ GazeboRosLaser::~GazeboRosLaser()
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load the controller
-void GazeboRosLaser::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
+void GazeboRosGpuLaser::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
 {
   // load plugin
   GpuRayPlugin::Load(_parent, this->sdf);
@@ -84,13 +84,13 @@ void GazeboRosLaser::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
     dynamic_pointer_cast<sensors::GpuRaySensor>(_parent);
 
   if (!this->parent_ray_sensor_)
-    gzthrow("GazeboRosLaser controller requires a Ray Sensor as its parent");
+    gzthrow("GazeboRosGpuLaser controller requires a Ray Sensor as its parent");
 
   this->robot_namespace_ =  GetRobotNamespace(_parent, _sdf, "Laser");
 
   if (!this->sdf->HasElement("frameName"))
   {
-    ROS_INFO_NAMED("gpu_laser", "GazeboRosLaser plugin missing <frameName>, defaults to /world");
+    ROS_INFO_NAMED("gpu_laser", "GazeboRosGpuLaser plugin missing <frameName>, defaults to /world");
     this->frame_name_ = "/world";
   }
   else
@@ -98,7 +98,7 @@ void GazeboRosLaser::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
 
   if (!this->sdf->HasElement("topicName"))
   {
-    ROS_INFO_NAMED("gpu_laser", "GazeboRosLaser plugin missing <topicName>, defaults to /world");
+    ROS_INFO_NAMED("gpu_laser", "GazeboRosGpuLaser plugin missing <topicName>, defaults to /world");
     this->topic_name_ = "/world";
   }
   else
@@ -115,16 +115,16 @@ void GazeboRosLaser::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
     return;
   }
 
-  ROS_INFO_NAMED("gpu_laser", "Starting GazeboRosLaser Plugin (ns = %s)", this->robot_namespace_.c_str() );
+  ROS_INFO_NAMED("gpu_laser", "Starting GazeboRosGpuLaser Plugin (ns = %s)", this->robot_namespace_.c_str() );
   // ros callback queue for processing subscription
   this->deferred_load_thread_ = boost::thread(
-    boost::bind(&GazeboRosLaser::LoadThread, this));
+    boost::bind(&GazeboRosGpuLaser::LoadThread, this));
 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load the controller
-void GazeboRosLaser::LoadThread()
+void GazeboRosGpuLaser::LoadThread()
 {
   this->gazebo_node_ = gazebo::transport::NodePtr(new gazebo::transport::Node());
   this->gazebo_node_->Init(this->world_name_);
@@ -145,8 +145,8 @@ void GazeboRosLaser::LoadThread()
     ros::AdvertiseOptions ao =
       ros::AdvertiseOptions::create<sensor_msgs::LaserScan>(
       this->topic_name_, 1,
-      boost::bind(&GazeboRosLaser::LaserConnect, this),
-      boost::bind(&GazeboRosLaser::LaserDisconnect, this),
+      boost::bind(&GazeboRosGpuLaser::LaserConnect, this),
+      boost::bind(&GazeboRosGpuLaser::LaserDisconnect, this),
       ros::VoidPtr(), NULL);
     this->pub_ = this->rosnode_->advertise(ao);
     this->pub_queue_ = this->pmq.addPub<sensor_msgs::LaserScan>();
@@ -162,18 +162,18 @@ void GazeboRosLaser::LoadThread()
 
 ////////////////////////////////////////////////////////////////////////////////
 // Increment count
-void GazeboRosLaser::LaserConnect()
+void GazeboRosGpuLaser::LaserConnect()
 {
   this->laser_connect_count_++;
   if (this->laser_connect_count_ == 1)
     this->laser_scan_sub_ =
       this->gazebo_node_->Subscribe(this->parent_ray_sensor_->Topic(),
-                                    &GazeboRosLaser::OnScan, this);
+                                    &GazeboRosGpuLaser::OnScan, this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Decrement count
-void GazeboRosLaser::LaserDisconnect()
+void GazeboRosGpuLaser::LaserDisconnect()
 {
   this->laser_connect_count_--;
   if (this->laser_connect_count_ == 0)
@@ -182,10 +182,10 @@ void GazeboRosLaser::LaserDisconnect()
 
 ////////////////////////////////////////////////////////////////////////////////
 // Convert new Gazebo message to ROS message and publish it
-void GazeboRosLaser::OnScan(ConstLaserScanStampedPtr &_msg)
+void GazeboRosGpuLaser::OnScan(ConstLaserScanStampedPtr &_msg)
 {
 #ifdef ENABLE_PROFILER
-  IGN_PROFILE("GazeboRosLaser::OnScan");
+  IGN_PROFILE("GazeboRosGpuLaser::OnScan");
   IGN_PROFILE_BEGIN("fill ROS message");
 #endif
   // We got a new message from the Gazebo sensor.  Stuff a
