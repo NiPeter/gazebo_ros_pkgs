@@ -62,6 +62,7 @@ GazeboRosGpuLaser::GazeboRosGpuLaser()
 GazeboRosGpuLaser::~GazeboRosGpuLaser()
 {
   ROS_DEBUG_STREAM_NAMED("gpu_laser","Shutting down GPU Laser");
+  this->laser_scan_sub_.reset();
   this->rosnode_->shutdown();
   delete this->rosnode_;
   ROS_DEBUG_STREAM_NAMED("gpu_laser","Unloaded");
@@ -71,8 +72,6 @@ GazeboRosGpuLaser::~GazeboRosGpuLaser()
 // Load the controller
 void GazeboRosGpuLaser::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
 {
-  // load plugin
-  GpuRayPlugin::Load(_parent, this->sdf);
   // Get the world name.
   std::string worldName = _parent->WorldName();
   this->world_ = physics::get_world(worldName);
