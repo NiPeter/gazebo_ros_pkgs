@@ -60,6 +60,7 @@ GazeboRosLaser::GazeboRosLaser()
 // Destructor
 GazeboRosLaser::~GazeboRosLaser()
 {
+  this->laser_scan_sub_.reset();
   this->rosnode_->shutdown();
   delete this->rosnode_;
 }
@@ -68,8 +69,6 @@ GazeboRosLaser::~GazeboRosLaser()
 // Load the controller
 void GazeboRosLaser::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
 {
-  // load plugin
-  RayPlugin::Load(_parent, this->sdf);
   // Get the world name.
   std::string worldName = _parent->WorldName();
   this->world_ = physics::get_world(worldName);
